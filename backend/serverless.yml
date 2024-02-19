@@ -1,0 +1,137 @@
+service: PersonalWebsite
+frameworkVersion: '3'
+
+plugins:
+  - serverless-webpack
+  # - serverless-cloudfront-invalidate # must be last plugin
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  apiGateway:
+    minimumCompressionSize: 1024
+    shouldStartNameWithService: true
+  memorySize: 128
+  stage: ${opt:stage, 'dev'}
+  region: eu-west-2
+  environment:
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    REACT_BUCKET_NAME: ${self:custom.ReactBucket.name}
+
+package:
+  individually: true
+
+functions:
+  authoriser:
+    handler: aws/handlers/auth/authoriser.handler
+  publicEndpoint:
+    handler: aws/handlers/auth/public.handler
+    events:
+      - http:
+          path: public
+          method: POST
+          cors: true
+  privateEndpoint:
+    handler: aws/handlers/auth/private.handler
+    events:
+      - http:
+          path: private
+          method: POST
+          cors: true
+          authorizer: ${self:custom.authoriser}
+
+resources:
+  Resources:
+  # Tables and Policies go here:
+  ###
+
+    CloudFrontOriginAccessIdentity:
+      Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+      Properties:
+        CloudFrontOriginAccessIdentityConfig:
+          Comment: Origin Access Identity for ${self:provider.stage} React Bucket
+    CloudFrontDistribution:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Comment: 'Personal website distribution'
+          CustomErrorResponses:
+            - ErrorCachingMinTTL: 300
+              ErrorCode: 403
+              ResponseCode: 200
+              ResponsePagePath: /index.html
+            - ErrorCachingMinTTL: 300
+              ErrorCode: 404
+              ResponseCode: 200
+              ResponsePagePath: /index.html
+          DefaultCacheBehavior:
+            AllowedMethods:
+              - DELETE
+              - GET
+              - HEAD
+              - OPTIONS
+              - PATCH
+              - POST
+              - PUT
+            Compress: true
+            DefaultTTL: 300
+            ForwardedValues:
+              QueryString: true
+            TargetOriginId: ${self:custom.ReactBucketTargetOrigin.name}
+            ViewerProtocolPolicy: 'redirect-to-https'
+          DefaultRootObject: index.html
+          Enabled: true
+          HttpVersion: http2
+          PriceClass: PriceClass_100
+          Origins:
+            - DomainName:
+                Fn::GetAtt:
+                  - ReactBucket
+                  - DomainName
+              Id: ${self:custom.ReactBucketTargetOrigin.name}
+              S3OriginConfig:
+                OriginAccessIdentity:
+                  Fn::Join:
+                    - ''
+                    - - origin-access-identity/cloudfront/
+                      - Ref: CloudFrontOriginAccessIdentity
+    # This response is needed for custom authorizer failures cors support
+    GatewayResponse:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: EXPIRED_TOKEN
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '401'
+    AuthFailureGatewayResponse:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: UNAUTHORIZED
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '401'
+
+custom:
+  ReactBucket:
+    name: react-bucket-2dna4jghqpoq-${self:provider.stage}
+  BucketFolder:
+    name: PersonalWebsite
+  ReactBucketTargetOrigin:
+    name: S3-${self:custom.ReactBucket.name}/${self:custom.BucketFolder.name}
+
+  authoriser: arn:aws:lambda:${aws:region}:${aws:accountId}:function:PersonalWebsite-${self:provider.stage}-authoriser
+  bundle:
+    linting: true
+  # cloudfrontInvalidate:
+  #   - distributionId: ''
+  #     autoInvalidate: true
+  #     items:
+  #       - '/*'
+  webpack:
+    webpackConfig: ./webpack.config.js
