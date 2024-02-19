@@ -16,23 +16,22 @@ provider:
   region: eu-west-2
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
-    REACT_BUCKET_NAME: ${self:custom.ReactBucket.name}
 
 package:
   individually: true
 
 functions:
   authoriser:
-    handler: aws/handlers/auth/authoriser.handler
+    handler: src/handlers/auth/authoriser.handler
   publicEndpoint:
-    handler: aws/handlers/auth/public.handler
+    handler: src/handlers/auth/public.handler
     events:
       - http:
           path: public
           method: POST
           cors: true
   privateEndpoint:
-    handler: aws/handlers/auth/private.handler
+    handler: src/handlers/auth/private.handler
     events:
       - http:
           path: private
@@ -44,6 +43,8 @@ resources:
   Resources:
   # Tables and Policies go here:
   ###
+    ClientBucket: ${file(src/resources/ClientBucket.yml):ClientBucket}
+    ClientBucketPolicy: ${file(src/resources/ClientBucket.yml):ClientBucketPolicy}
 
     CloudFrontOriginAccessIdentity:
       Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
@@ -77,18 +78,18 @@ resources:
             DefaultTTL: 300
             ForwardedValues:
               QueryString: true
-            TargetOriginId: ${self:custom.ReactBucketTargetOrigin.name}
+            TargetOriginId: ${self:custom.ClientBucketTargetOrigin.name}
             ViewerProtocolPolicy: 'redirect-to-https'
           DefaultRootObject: index.html
           Enabled: true
-          HttpVersion: http2
+          HttpVersion: http3
           PriceClass: PriceClass_100
           Origins:
             - DomainName:
                 Fn::GetAtt:
-                  - ReactBucket
+                  - ClientBucket
                   - DomainName
-              Id: ${self:custom.ReactBucketTargetOrigin.name}
+              Id: ${self:custom.ClientBucketTargetOrigin.name}
               S3OriginConfig:
                 OriginAccessIdentity:
                   Fn::Join:
@@ -118,18 +119,18 @@ resources:
         StatusCode: '401'
 
 custom:
-  ReactBucket:
+  ClientBucket:
     name: react-bucket-2dna4jghqpoq-${self:provider.stage}
   BucketFolder:
     name: PersonalWebsite
-  ReactBucketTargetOrigin:
-    name: S3-${self:custom.ReactBucket.name}/${self:custom.BucketFolder.name}
+  ClientBucketTargetOrigin:
+    name: S3-${self:custom.ClientBucket.name}/${self:custom.BucketFolder.name}
 
   authoriser: arn:aws:lambda:${aws:region}:${aws:accountId}:function:PersonalWebsite-${self:provider.stage}-authoriser
   bundle:
     linting: true
   # cloudfrontInvalidate:
-  #   - distributionId: ''
+  #   - distributionId: 'E1NBD84USH15M2'
   #     autoInvalidate: true
   #     items:
   #       - '/*'

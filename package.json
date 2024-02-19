@@ -3,6 +3,16 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "buildClient": "cd ./client && vite build",
+    "syncClient": "cd ./client && aws s3 rm s3://react-bucket-2dna4jghqpoq-dev --recursive && aws s3 sync ./dist s3://react-bucket-2dna4jghqpoq-dev",
+    "deployClient": "npm run buildClient && npm run syncClient && cd ./client && rmdir /s /q dist",
+    "slsDeploy": "cd ./backend && serverless deploy --verbose",
+    "-": "",
+    "fullDeploy": "npm run deployClient & npm run slsDeploy",
+    "--": "",
+    "serve": "cd ./client && vite serve --host"
+  },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "7.0",
     "@typescript-eslint/parser": "^7.0.1",
@@ -19,8 +29,5 @@
     "eslint-plugin-unused-imports": "^3.1.0",
     "prettier": "^3.2.5",
     "typescript": "^5.3.3"
-  },
-  "dependencies": {
-    "detect-browser": "^5.3.0"
   }
 }

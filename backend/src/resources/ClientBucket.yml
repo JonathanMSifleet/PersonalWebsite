@@ -1,0 +1,32 @@
+ClientBucket:
+  Type: AWS::S3::Bucket
+  Properties:
+    BucketName: ${self:custom.ClientBucket.name}
+    WebsiteConfiguration:
+      IndexDocument: index.html
+      ErrorDocument: index.html
+    PublicAccessBlockConfiguration:
+      BlockPublicPolicy: false
+      RestrictPublicBuckets: false
+
+ClientBucketPolicy:
+  Type: AWS::S3::BucketPolicy
+  Properties:
+
+    Bucket: !Ref ClientBucket
+    PolicyDocument:
+      Statement:
+        - Sid: PublicReadGetObject
+          Effect: Allow
+          Principal: '*'
+          Action:
+            - s3:GetObject
+          Resource:
+            - arn:aws:s3:::${self:custom.ClientBucket.name}/*
+        - Sid: PublicWritePutObject
+          Effect: Allow
+          Principal: '*'
+          Action:
+            - s3:PutObject
+          Resource:
+            - arn:aws:s3:::${self:custom.ClientBucket.name}/*
