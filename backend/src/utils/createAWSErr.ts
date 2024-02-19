@@ -1,6 +1,9 @@
 import type { IHttpRes } from '../interfaces/httpRes';
 
-export const createAWSErr = (statusCode: number, message: string | string[]): IHttpRes => {
+export const createAWSErr = (
+  statusCode: number,
+  message: string | string[]
+): IHttpRes => {
   if (Array.isArray(message)) {
     logErrors(message);
     message = message.join('\n');
