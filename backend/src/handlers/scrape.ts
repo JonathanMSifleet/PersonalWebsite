@@ -10,7 +10,9 @@ const scrape = async (): Promise<IHttpRes> => {
 
   let i = 1;
   try {
-    while (true) {
+    while (
+      !currentFilmHtml.includes("<a class='page-link' href='#'>Next</a></li>")
+    ) {
       const response = await fetch(
         `https://www.criticker.com/ratings/jonwashere/?p=${i}`
       );
@@ -30,11 +32,6 @@ const scrape = async (): Promise<IHttpRes> => {
       console.log(`Finished scraping page ${i}`);
 
       i++;
-      if (
-        currentFilmHtml.includes("<a class='page-link' href='#'>Next</a></li>")
-      ) {
-        break;
-      }
     }
 
     return {
