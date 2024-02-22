@@ -7,7 +7,7 @@
     "buildClient": "cd ./client && vite build",
     "syncClient": "cd ./client && aws s3 rm s3://react-bucket-2dna4jghqpoq-dev --recursive && aws s3 sync ./dist s3://react-bucket-2dna4jghqpoq-dev",
     "deployClient": "npm run buildClient && npm run syncClient && cd ./client && rmdir /s /q dist",
-    "slsDeploy": "cd ./backend && serverless deploy --verbose",
+    "slsDeploy": "cd ./backend && npx serverless deploy --verbose",
     "-": "",
     "fullDeploy": "npm run deployClient & npm run slsDeploy",
     "--": "",

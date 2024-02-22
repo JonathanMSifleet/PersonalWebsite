@@ -38,6 +38,15 @@ functions:
           method: POST
           cors: true
           authorizer: ${self:custom.authoriser}
+  scrape:
+    handler: src/handlers/scrape.handler
+    timeout: 30
+    memorySize: 256
+    events:
+      - http:
+          path: scrape
+          method: GET
+          cors: true
 
 resources:
   Resources:
