@@ -27,7 +27,10 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-sonarjs": "^0.24.0",
     "eslint-plugin-unused-imports": "^3.1.0",
-    "prettier": "^3.2.5",
-    "typescript": "^5.3.3"
+    "prettier": "^3.2.5"
+  },
+  "dependencies": {
+    "depcheck": "^1.4.7",
+    "npm-check-updates": "^16.14.15"
   }
 }
