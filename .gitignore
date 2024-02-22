@@ -27,3 +27,4 @@ node_modules
 .yarn
 .serverless
 .webpack
+.vite
