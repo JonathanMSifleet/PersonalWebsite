@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { PageWrapper } from '../../hoc/PageWrapper/PageWrapper';
 import { SCRAPE } from '../../constants/endpoints';
+import { Toggle } from '../../components/Toggle/Toggle';
+import { Spinner } from '../../components/Spinner/Spinner';
 
 export const Home = (): JSX.Element => {
   const [data, setData] = useState<any>(undefined);
   const [isLoading, setIsLoading] = useState(false);
+  const [localDb, setLocalDb] = useState(true);
 
   const scrape = async () => {
     setIsLoading(true);
@@ -22,8 +25,10 @@ export const Home = (): JSX.Element => {
     }
   };
 
+  const onToggle = () => setLocalDb(!localDb);
+
   const displayData = () => {
-    if (isLoading) return <p>Loading...</p>;
+    if (isLoading) return <Spinner />;
     if (data === undefined) return;
     if (!data) return <p>Error</p>;
 
@@ -36,8 +41,9 @@ export const Home = (): JSX.Element => {
         Under construction for now!
       </h1>
       <p className="text-[12rem]">🏗️</p>
-      <button onClick={scrape}>Scrape</button>
-      {displayData()}{' '}
+      <Toggle enabled={localDb} onChange={onToggle} />
+      <button onClick={scrape}>Fetch films</button>
+      {displayData()}
     </PageWrapper>
   );
 };
