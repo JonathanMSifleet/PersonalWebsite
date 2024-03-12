@@ -1,6 +1,6 @@
 module.exports = {
   env: {
-    browser: true
+    browser: true,
   },
   plugins: [
     '@typescript-eslint',
@@ -12,7 +12,7 @@ module.exports = {
     'prettier',
     'react',
     'sonarjs',
-    'unused-imports'
+    'unused-imports',
   ],
   extends: [
     'eslint-config-prettier',
@@ -32,10 +32,11 @@ module.exports = {
     tsconfigRootDir: __dirname,
     sourceType: 'module',
     ecmaVersion: 'latest',
-    ecmaFeatures: { jsx: true }
+    ecmaFeatures: { jsx: true },
   },
   rules: {
     '@typescript-eslint/consistent-type-imports': 2,
+    '@typescript-eslint/explicit-function-return-type': 2,
     '@typescript-eslint/no-empty-function': 2,
     '@typescript-eslint/no-explicit-any': 2,
     '@typescript-eslint/no-non-null-assertion': 0,
@@ -58,12 +59,11 @@ module.exports = {
     'react/prop-types': 0,
     'react/react-in-jsx-scope': 0,
     'sonarjs/no-duplicate-string': 0,
-    'unused-imports/no-unused-imports': 'error'
+    'unused-imports/no-unused-imports': 'error',
   },
   settings: {
     react: {
-      version: 'detect'
-    }
-  }
+      version: 'detect',
+    },
+  },
 };
-
