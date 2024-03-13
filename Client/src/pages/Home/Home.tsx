@@ -27,12 +27,31 @@ export const Home = (): JSX.Element => {
 
   const onToggle = () => setLocalDb(!localDb);
 
-  const displayData = () => {
-    if (isLoading) return <Spinner />;
-    if (data === undefined) return;
-    if (!data) return <p>Error</p>;
+  const fetchSql = async () => {
+    let db;
+    // initialise indexeddb
+    const request = indexedDB.open('MyTestDatabase', 3);
 
-    return <pre>{JSON.stringify(data, null, 2)}</pre>;
+    request.onerror = () => {
+      console.error("Why didn't you allow my web app to use IndexedDB?!");
+    };
+    request.onsuccess = (event) => {
+      db = event!.target!.result!;
+    };
+  };
+
+  const displayData = () => {
+    switch (true) {
+      case isLoading:
+        console.log('loading');
+        return <Spinner />;
+      case data === undefined:
+        return;
+      case !data:
+        return <p>Error</p>;
+      default:
+        return <pre>{JSON.stringify(data, null, 2)}</pre>;
+    }
   };
 
   return (
@@ -43,6 +62,7 @@ export const Home = (): JSX.Element => {
       <p className="text-[12rem]">🏗️</p>
       <Toggle enabled={localDb} onChange={onToggle} />
       <button onClick={scrape}>Fetch films</button>
+      <button onClick={fetchSql}>Store sql package locally</button>
       {displayData()}
     </PageWrapper>
   );
